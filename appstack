@@ -1,0 +1,71 @@
+#!/usr/bin/env ruby
+
+require 'rubygems'
+require 'optparse'
+require 'fileutils'
+include FileUtils
+
+class AppStack
+
+  def initialize(source, options)
+    @options = options
+
+    source = File.expand_path source
+
+    if File.file? source
+      puts blue('Source ') + gray(source)
+    else
+      puts blue('Source not found!')
+    end
+
+  end
+
+
+  # Ask for permission
+  def ask(prompt)
+    print yellow("#{prompt} [y/n]"), ' '
+    $stdin.gets.strip.match /^y/i
+  end
+
+
+  # Stop and say something
+  def say(message)
+    print yellow("#{message} [OK?]"), ' '
+    $stdin.gets.strip
+  end
+
+
+  # Pretty colours
+  def red(text)    "\033[31m#{text}\033[m" end
+  def green(text)  "\033[32m#{text}\033[m" end
+  def yellow(text) "\033[33m#{text}\033[m" end
+  def blue(text)   "\033[34m#{text}\033[m" end
+  def gray(text)   "\033[37m#{text}\033[m" end
+
+end
+
+
+# Default values for options
+options = { :force => false, :help => false }
+
+# Option parser
+opt_parser = OptionParser.new do |opt|
+  opt.banner = "Usage: app [OPTIONS] SOURCE [TARGET]"
+  opt.on("-f","--force","Force existing apps to be overwritten") { options[:force] = true }
+  opt.on("-h","--help","help") { options[:help] = true }
+end
+
+opt_parser.parse!
+
+
+# If there's an argument, let's do this:
+if ARGV[0]
+  source = ARGV[0]
+  App.new source, options
+
+# If there's no arguments, show the help
+else
+  options[:help] = true
+end
+
+puts opt_parser if options[:help]
