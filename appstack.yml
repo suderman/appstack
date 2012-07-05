@@ -1,10 +1,8 @@
-brew:
-  run: /usr/bin/ruby -e '$(/usr/bin/curl -fsSL https://raw.github.com/mxcl/homebrew/master/Library/Contributions/install_homebrew.rb)'
-  after: brew doctor
+brew: |
+  /usr/bin/ruby -e '$(/usr/bin/curl -fsSL https://raw.github.com/mxcl/homebrew/master/Library/Contributions/install_homebrew.rb)'
+  brew doctor
 
-app:
-  use: brew
-  tap: suderman/suds
+app: brew suderman/suds
 
 node: brew
 npm: curl http://npmjs.org/install.sh | sh
@@ -14,29 +12,12 @@ tig: brew
 rbenv: brew
 ruby-build: brew
 
-llvm-gcc:
-  use: app
-  src: 94pqy3oq1zt9xso/cltools_lion_latemarch12.dmg
-
-gcc:
-  use: app
-  src: zmlm47fmbqcnwl7/GCC-10.7-v2.pkg
-
+llvm-gcc: 94pqy3oq1zt9xso/cltools_lion_latemarch12.dmg
+gcc: zmlm47fmbqcnwl7/GCC-10.7-v2.pkg
 
 mysql:
   use: brew
-  after:
-  - unset TMPDIR
-  - mysql_install_db --verbose --user=`whoami` --basedir="$(brew --prefix mysql)" --datadir=/usr/local/var/mysql --tmpdir=/tmp
-  - mysql.server start
-  - mkdir -p ~/Library/LaunchAgents
-  - launchctl unload -w ~/Library/LaunchAgents/homebrew.mxcl.mysql.plist
-  - cp /usr/local/Cellar/mysql/5.5.25/homebrew.mxcl.mysql.plist ~/Library/LaunchAgents/
-  - launchctl load -w ~/Library/LaunchAgents/homebrew.mxcl.mysql.plist
-
-mysql:
-  use: brew
-  after: |
+  run: |
     unset TMPDIR
     mysql_install_db --verbose --user=`whoami` --basedir="$(brew --prefix mysql)" --datadir=/usr/local/var/mysql --tmpdir=/tmp
     mysql.server start
@@ -46,14 +27,11 @@ mysql:
     launchctl load -w ~/Library/LaunchAgents/homebrew.mxcl.mysql.plist
 
 Dropbox.app:
-  use: app
-  src: 98shr7bfcuoo39o/Dropbox 1-2.4.7.dmg
-  # after: [ -e /Applications/Dropbox.app/Contents/Resources/check.icns ] && mv -f /Applications/Dropbox.app/Contents/Resources/check.icns /Applications/Dropbox.app/Contents/Resources/check.icns.bak
+  use: 98shr7bfcuoo39o/Dropbox 1-2.4.7.dmg
+  run: |
+    [ -e /Applications/Dropbox.app/Contents/Resources/check.icns ] 
+    mv -f /Applications/Dropbox.app/Contents/Resources/check.icns /Applications/Dropbox.app/Contents/Resources/check.icns.bak
 
-1Password.app:
-  use: app
-  src: 1Password-3.8.19.zip
+1Password.app: 1Password-3.8.19.zip
 
-Launchpad-Control.prefPane:
-  use: app
-  src: Launchpad-Control.zip
+Launchpad-Control.prefPane: Launchpad-Control.zip

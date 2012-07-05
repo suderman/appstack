@@ -2,6 +2,7 @@
 
 require 'rubygems'
 require 'optparse'
+require 'yaml'
 require 'fileutils'
 include FileUtils
 
@@ -14,12 +15,21 @@ class AppStack
 
     if File.file? source
       puts blue('Source ') + gray(source)
+      @stack = YAML::load File.open(source)
+      process @stack
     else
       puts blue('Source not found!')
     end
 
   end
 
+  def process(stack)
+    stack.each do |key, val|
+      puts key
+      puts val.class.to_s
+      puts
+    end
+  end
 
   # Does a command exist?
   def command?(name)
@@ -243,7 +253,7 @@ opt_parser.parse!
 # If there's an argument, let's do this:
 if ARGV[0]
   source = ARGV[0]
-  App.new source, options
+  AppStack.new source, options
 
 # If there's no arguments, show the help
 else
