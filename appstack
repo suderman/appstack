@@ -61,16 +61,22 @@ class AppStack
     # Determine installer based on contents of "use"
     case use
 
-    # Brew
-    when /^brew$/, /^brew\s[\w\-]*\/[\w\-]*$/i
+    # Brew => brew --with-mysql --with-cgi josegonzalez/homebrew-php
+    when /^brew(\s\-{1,2}[\w\-]+)*(\s[\w\-]+\/[\w\-]+)*$/i
 
       # Set tap if the shorthand is used
-      tap = use.split(' ').last if tap.empty? and use.match(/\s/)
+      tap = use.match(/([\w\-]+\/[\w\-]+)$/).to_s if tap.empty?
 
       # If this brew's repo is untapped, set the command in "pre"
       if pre.empty? and `brew tap | grep "#{tap}"`.chomp.empty?
         pre = "brew tap #{tap}"
       end
+
+      # Separate out any trailing options
+      use, options = source_options use.gsub(" #{tap}", '')
+
+      # Set "opt" with existing options
+      opt = options.strip.split(' ')
 
       # Set use to :brew
       use = :brew
@@ -80,12 +86,12 @@ class AppStack
       use = :npm
 
     # App or URL
-    when /^(app|url)$/, /\.(#{extensions})(\s(\-{1,2})\w*)*$/i, /^(#{protocols}):/i
+    when /^(app|url)$/, /\.(#{extensions})(\s(\-{1,2})[\w\-]*)*$/i, /^(#{protocols}):/i
 
       # Separate out any trailing options
       use, options = source_options(use)
 
-      # Set "opt" with any existing options
+      # Set "opt" with existing options
       opt = options.strip.split(' ')
       opt << '--open' if open
 
@@ -106,7 +112,7 @@ class AppStack
     pre = pre.split("\n") if pre.class.to_s == 'String'
 
     # Assemble new app object
-    { :app => key, :use => use, :src => src, :run => run, :pre => pre, :opt => opt }
+    { :app => key, :use => use, :src => src, :opt => opt, :pre => pre, :run => run }
   end
 
 

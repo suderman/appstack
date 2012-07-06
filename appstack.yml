@@ -4,6 +4,8 @@ brew: |
   /usr/bin/ruby -e '$(/usr/bin/curl -fsSL https://raw.github.com/mxcl/homebrew/master/Library/Contributions/install_homebrew.rb)'
   brew doctor
 
+php53: brew --with-mysql --with-cgi josegonzalez/homebrew-php
+
 app: brew suderman/suds
 fake: 
   use: brew
@@ -12,7 +14,7 @@ fake:
 
 Sparrow.app: sparrow/id417250177
 Sparrow2.app: 
-  use: sparrow/id417250177# Node
+  use: sparrow/id417250177
   src: notsparrow/id417250177
   pre: top
   run: |
