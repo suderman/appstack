@@ -212,7 +212,7 @@ class AppStack
 
   # Known extensions handled by app installer
   def extensions
-    "zip|dmg|pkg|mpkg|service|prefPane|safariext"
+    "zip|dmg|pkg|mpkg|service|prefPane|safariextz"
   end
 
 
