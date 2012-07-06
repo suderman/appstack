@@ -1,45 +1,34 @@
-# Test data
+brew: /usr/bin/ruby -e '$(/usr/bin/curl -fsSL https://raw.github.com/mxcl/homebrew/master/Library/Contributions/install_homebrew.rb)'
 
 brew: |
   /usr/bin/ruby -e '$(/usr/bin/curl -fsSL https://raw.github.com/mxcl/homebrew/master/Library/Contributions/install_homebrew.rb)'
   brew doctor
 
-app: brew suderman/suds
-fake: 
+app:
   use: brew
-  tap: fake/repo
-  run: top
-
-Sparrow.app: sparrow/id417250177
-Sparrow2.app: 
-  use: sparrow/id417250177# Node
-  src: notsparrow/id417250177
-  pre: top
-  run: |
-    cd ~
-    ls -lah
-
-LogMeIn.prefPane: https://secure.logmein.com/central/Central.asp
+  tap: suderman/suds
 
 node: brew
 npm: curl http://npmjs.org/install.sh | sh
 
 git: brew
 tig: brew
-rbenv: brew
-ruby-build: brew
 
-Adobe Photoshop CS6.app: ziwjn4rrwuzqjiw/Photoshop_13_LS16-1.dmg --open --force
-Adobe Photoshop CS7.app: 
-  use: ziwjn4rrwuzqjiw/Photoshop_13_LS16-1.dmg
-  open: true
+rbenv: brew
+
+ruby-build: 
+  use: brew
+  run: rbenv install 1.9.3-rc1 && rbenv rehash
 
 llvm-gcc: 94pqy3oq1zt9xso/cltools_lion_latemarch12.dmg
 gcc: zmlm47fmbqcnwl7/GCC-10.7-v2.pkg
 
+coffee-script: npm
+haml: gem
+
 mysql:
   use: brew
-  run: |
+  after: |
     unset TMPDIR
     mysql_install_db --verbose --user=`whoami` --basedir="$(brew --prefix mysql)" --datadir=/usr/local/var/mysql --tmpdir=/tmp
     mysql.server start
@@ -48,12 +37,9 @@ mysql:
     cp /usr/local/Cellar/mysql/5.5.25/homebrew.mxcl.mysql.plist ~/Library/LaunchAgents/
     launchctl load -w ~/Library/LaunchAgents/homebrew.mxcl.mysql.plist
 
-
 Dropbox.app:
-  use: 98shr7bfcuoo39o/Dropbox 1-2.4.7.dmg --open
-  run: |
-    [ -e /Applications/Dropbox.app/Contents/Resources/check.icns ] 
-    mv -f /Applications/Dropbox.app/Contents/Resources/check.icns /Applications/Dropbox.app/Contents/Resources/check.icns.bak
+  use: 98shr7bfcuoo39o/Dropbox 1-2.4.7.dmg
+  after: [ -e /Applications/Dropbox.app/Contents/Resources/check.icns ] && mv -f /Applications/Dropbox.app/Contents/Resources/check.icns /Applications/Dropbox.app/Contents/Resources/check.icns.bak
 
 1Password.app: 1Password-3.8.19.zip
 

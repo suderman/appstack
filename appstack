@@ -3,6 +3,7 @@
 require 'rubygems'
 require 'optparse'
 require 'yaml'
+require 'ap'
 require 'fileutils'
 include FileUtils
 
@@ -23,13 +24,103 @@ class AppStack
 
   end
 
+
+  # Deal with each app in the stack
   def process(stack)
     stack.each do |key, val|
-      puts key
-      puts val.class.to_s
-      puts
+      app = parse key, val
+      ap app
     end
   end
+
+
+  # Parse yaml shorthand into consistent objects
+  def parse(key, val)
+
+    # Empty defaults
+    use, src, tap = '', '', ''
+    pre, run, opt = [], [], []
+
+    # Check if shorthand was used or not
+    case val.class.to_s
+
+    # If so, set use and move on
+    when 'String'
+      use = expand val 
+
+    # If not, set any explicit options
+    when 'Hash'
+      use = expand(val['use']) if val['use']
+      src = expand(val['src']) if val['src']
+      run = val['run'] if val['run']
+      pre = val['pre'] if val['pre']
+      tap = val['tap'] if val['tap']
+      open = val['open'] if val['open']
+    end
+
+    # Determine installer based on contents of "use"
+    case use
+
+    # Brew
+    when /^brew$/, /^brew\s[\w\-]*\/[\w\-]*$/i
+
+      # Set tap if the shorthand is used
+      tap = use.split(' ').last if tap.empty? and use.match(/\s/)
+
+      # If this brew's repo is untapped, set the command in "pre"
+      if pre.empty? and `brew tap | grep "#{tap}"`.chomp.empty?
+        pre = "brew tap #{tap}"
+      end
+
+      # Set use to :brew
+      use = :brew
+
+    # npm
+    when /^npm$/
+      use = :npm
+
+    # App or URL
+    when /^(app|url)$/, /\.(#{extensions})(\s(\-{1,2})\w*)*$/i, /^(#{protocols}):/i
+
+      # Separate out any trailing options
+      use, options = source_options(use)
+
+      # Set "opt" with any existing options
+      opt = options.strip.split(' ')
+      opt << '--open' if open
+
+      # Store use in "src" since use contains a path or URL
+      src = use if src.empty?
+
+      # If "use" ends in a known extension, set :app -- otherwise, set :url
+      use = (extensions.split('|').include? use.split('.').last) ? :app : :url
+
+    # Everything else is considered a command
+    else
+      use = :command
+      run = val
+    end
+
+    # Split linebreaks into arrays for commands
+    run = run.split("\n") if run.class.to_s == 'String'
+    pre = pre.split("\n") if pre.class.to_s == 'String'
+
+    # Assemble new app object
+    { :app => key, :use => use, :src => src, :run => run, :pre => pre, :opt => opt }
+  end
+
+
+  # Known extensions handled by app installer
+  def extensions
+    "zip|dmg|pkg|mpkg|service|prefPane|safariext"
+  end
+
+
+  # Known protocols in valid URLs
+  def protocols
+    "http|https|macappstore"
+  end
+
 
   # Does a command exist?
   def command?(name)
@@ -174,12 +265,12 @@ class AppStack
         end
 
         open = (options[:open]) ? '-o ' : ''
-        source = parse options[:src]
+        source = expand options[:src]
         system "app #{open}-f \"#{source}\""
 
       # Open an URL (website or App Store)
       elsif options[:url]
-        url = parse options[:url]
+        url = expand options[:url]
         system "open #{url}"
         say 'Click "Install" on the App Store' if url.match /^macappstore/i
       end
@@ -196,20 +287,34 @@ class AppStack
   end
 
 
-  def parse(source)
-    case url
+  # Expand source into full URL (when applicable)
+  def expand(source)
+
+    # Temporarily remove any options
+    source, options = source_options(source)
+
+    case source
 
     # App Store => sparrow/id417250177 
-    when /^[a-zA-Z0-9_\-]*\/id[0-9]*$/i
-      "macappstore://itunes.apple.com/ca/app/#{source}"
+    when /^[\w\-]*\/id[0-9]*$/i
+      "macappstore://itunes.apple.com/ca/app/#{source}#{options}"
 
     # Dropbox => zmlm47fmbqcnwl7/GCC-10.7-v2.pkg
-    when /^[a-zA-Z0-9_]*\/[a-zA-Z0-9_\-\s]*\.[a-zA-Z0-9_]*$/i
-      "https://dl.dropbox.com/s/#{source}"
+    when /^[\w]*\/[\w\.\-\s]*\.(#{extensions})$/i
+      "https://dl.dropbox.com/s/#{source}#{options}"
 
     else
-      source
+      "#{source}#{options}"
     end
+
+  end
+
+
+  def source_options(source)
+    options = source.strip.split('.').last.split(' ')[1..-1]
+    options = (options.empty?) ? '' : " #{options.join(' ')}"
+    source = source.gsub options, ''
+    [source, options]
   end
 
 
