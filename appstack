@@ -3,23 +3,31 @@
 require 'rubygems'
 require 'optparse'
 require 'yaml'
-require 'ap'
 require 'fileutils'
 include FileUtils
 
 class AppStack
 
   def initialize(source, options)
-    @options = options
 
+    @options = options
     source = File.expand_path source
 
+    # Ensure the yaml file exists
     if File.file? source
-      puts blue('Source ') + gray(source)
-      @stack = YAML::load File.open(source)
-      process @stack
+
+      # Process the yaml file
+      begin
+        process YAML::load File.open(source)
+
+      # Error message if the yaml file is malformed
+      rescue Exception => se
+        puts red("[error]#{se.to_s.split(':').last}") 
+      end
+
+    # Error message if the yaml file cannot be found
     else
-      puts blue('Source not found!')
+      puts red("[error] \"#{source}\" not found!") 
     end
 
   end
@@ -28,8 +36,79 @@ class AppStack
   # Deal with each app in the stack
   def process(stack)
     stack.each do |key, val|
+
+      # Build app object from key + val
       app = parse key, val
-      ap app
+
+      # Install each app appropriately
+      case app[:use]
+
+        # Install a new command
+        when :command
+          install app
+
+        # Install a new brew recipe
+        when :brew
+          install app do
+            system "brew install \"#{app[:app]}\" #{app[:opt].join(' ')}"
+          end
+
+        # Install a new node package
+        when :npm
+          install app do
+            system "npm install \"#{app[:app]}\" #{app[:opt].join(' ')}"
+          end
+
+        # Install a new app with app 
+        when :app
+          install app do
+            system "app \"#{app[:src]}\" #{app[:opt].join(' ')}"
+          end
+
+        # Open a URL 
+        when :url
+          install app do
+            system "open \"#{app[:src]}\" #{app[:opt].join(' ')}"
+            if app[:src].match /^macappstore/i
+              say 'Click "Install" on the App Store'
+            else
+              say "Opening browser URL => #{app[:src]}"
+            end
+          end
+      end
+    end
+  end
+
+
+  # Install an app
+  def install(app)
+
+    puts "\n[#{green(app[:app])}]"
+
+    # Ensure dependencies are installed
+    if [:brew, :npm, :app].include? app[:use]
+      unless command? app[:use].to_s, :skip_force_check => true
+        puts red("[error] #{app[:use].to_s} is not installed!") 
+        return false
+      end
+    end
+
+    # Check if it's already installed
+    if send "#{app[:use]}?", app[:app]
+      puts "...already installed!"
+    else
+
+      # If only checking, don't install anything
+      if @options[:check]
+        puts gray("...needs to be installed.")
+
+      # Run pre-install commands, install, run post-install commands
+      else
+        app[:pre].each { |line| system line }
+        yield if block_given?
+        app[:run].each { |line| system line }
+      end
+
     end
   end
 
@@ -81,8 +160,18 @@ class AppStack
       # Set use to :brew
       use = :brew
 
-    # npm
-    when /^npm$/
+    when /^npm(\s\-{1,2}[\w\-]+)*$/
+
+      # Separate out any trailing options
+      use, options = source_options use
+
+      # Set "opt" with existing options
+      opt = options.strip.split(' ')
+
+      # Force global installs
+      opt << '--global'
+
+      # Set use to :npm
       use = :npm
 
     # App or URL
@@ -93,13 +182,18 @@ class AppStack
 
       # Set "opt" with existing options
       opt = options.strip.split(' ')
-      opt << '--open' if open
 
       # Store use in "src" since use contains a path or URL
       src = use if src.empty?
 
       # If "use" ends in a known extension, set :app -- otherwise, set :url
       use = (extensions.split('|').include? use.split('.').last) ? :app : :url
+
+      # Check for open and force options
+      if use == :app
+        opt << '--open' if open
+        opt << '--force' if @options[:force]
+      end
 
     # Everything else is considered a command
     else
@@ -129,28 +223,17 @@ class AppStack
 
 
   # Does a command exist?
-  def command?(name)
-    system "type #{name} &> /dev/null"
-  end
-
-
-  # Install a new command
-  def command(name, options={})
-
-    puts "\n[#{green(name)}]"
-
-    if command? name
-      puts "...already installed!"
-    else
-      system "#{options[:command]}"
-      yield if block_given?
+  def command?(name, options={})
+    unless options[:skip_force_check]
+      return false if @options[:force]
     end
-
+    system "type #{name} &> /dev/null"
   end
 
 
   # Has this brew recipe been installed?
   def brew?(name)
+    return false if @options[:force]
 
     unless command? 'brew'
       puts red("[error] Homebrew is not installed!") 
@@ -161,30 +244,9 @@ class AppStack
   end
 
 
-  # Install a new brew recipe
-  def brew(name_with_args, options={})
-
-    name = name_with_args.split(' ')[0]
-    puts "\n[#{green(name)}]"
-
-    unless command? 'brew'
-      puts red("[error] Homebrew is not installed!") 
-      return false
-    end
-
-    if brew? name
-      puts "...already installed!"
-    else
-      system "brew tap #{options[:tap]}" if options[:tap]
-      system "brew install #{name_with_args}"
-      yield if block_given?
-    end
-
-  end
-
-
   # Has this node package been installed?
   def npm?(name)
+    return false if @options[:force]
 
     unless command? 'npm'
       puts red("[error] npm is not installed!") 
@@ -195,32 +257,11 @@ class AppStack
   end
 
 
-  # Install a new node package
-  def npm(name)
-
-    puts "\n[#{green(name)}]"
-
-    unless command? 'npm'
-      puts red("[error] npm is not installed!") 
-      return false
-    end
-
-    if npm? name
-      puts "...already installed!"
-    else
-      system "npm install #{name} -g"
-    end
-
-  end
-
-
   # Has this app been installed?
   def app?(name)
 
-    unless command? 'app'
-      puts red("[error] app is not installed!") 
-      return false
-    end
+    # With force enabled, NOTHING has been installed
+    return false if @options[:force]
 
     # First see if the name is a command
     return true if command? name
@@ -231,6 +272,7 @@ class AppStack
     when :app
       return true if find? "/Applications", name
       return true if find? "~/Applications", name
+      return true if find? "~/Library/Application Support", name
 
     when :prefpane
       return true if find? "~/Library/PreferencePanes", name
@@ -252,43 +294,24 @@ class AppStack
   end
 
 
-  # Install a new app with app 
-  def app(name, options={})
-
-    puts "\n[#{green(name)}]"
-
-    if app? name
-      puts "...already installed!"
-
-    else
-
-      # Install an app with app
-      if options[:src]
-
-        unless command? 'app'
-          puts red("[error] app is not installed!") 
-          return false
-        end
-
-        open = (options[:open]) ? '-o ' : ''
-        source = expand options[:src]
-        system "app #{open}-f \"#{source}\""
-
-      # Open an URL (website or App Store)
-      elsif options[:url]
-        url = expand options[:url]
-        system "open #{url}"
-        say 'Click "Install" on the App Store' if url.match /^macappstore/i
-      end
-
-      yield if block_given?
-    end
+  # Just check app? locations
+  def url?(name)
+    app? name
   end
 
 
+  # Check if an app exists
   def find?(path, name)
-    path = File.expand_path path
-    results = `sudo find "#{path}" -iname "#{name}" | head -n 1`.strip
+
+    # Look for the file without sudo
+    find_command = "find \"#{File.expand_path(path)}\" -iname \"#{name}\" 2>&1 | head -n 1"
+    results = `#{find_command}`.chomp
+
+    # If that doesn't work, go full-sudo
+    if results.match(/permission denied/i)
+      results = `sudo #{find_command}`.chomp
+    end
+
     true unless results.empty?
   end
 
@@ -316,6 +339,7 @@ class AppStack
   end
 
 
+  # Split source from options
   def source_options(source)
     options = source.strip.split('.').last.split(' ')[1..-1]
     options = (options.empty?) ? '' : " #{options.join(' ')}"
@@ -349,11 +373,12 @@ end
 
 
 # Default values for options
-options = { :force => false, :help => false }
+options = { :check => false, :force => false, :help => false }
 
 # Option parser
 opt_parser = OptionParser.new do |opt|
-  opt.banner = "Usage: app [OPTIONS] SOURCE [TARGET]"
+  opt.banner = "Usage: appstack [OPTIONS] YAML"
+  opt.on("-c","--check","Only check if apps need to be installed") { options[:check] = true }
   opt.on("-f","--force","Force existing apps to be overwritten") { options[:force] = true }
   opt.on("-h","--help","help") { options[:help] = true }
 end
