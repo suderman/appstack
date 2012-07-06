@@ -1,0 +1,75 @@
+# Example appstack
+# appstack example.yml
+
+# Homebrew should be installed right away
+brew: 
+  run: /usr/bin/ruby -e '$(/usr/bin/curl -fsSL https://raw.github.com/mxcl/homebrew/master/Library/Contributions/install_homebrew.rb)'
+
+# Node needs to be installed before npm
+node: 
+  use: brew
+
+# npm is another support installer for many tools
+npm: 
+  run: curl http://npmjs.org/install.sh | sh
+
+# app is an installer for .app, .pkg, .mpkg, .prefPane and .safariextz
+app: 
+  use: brew 
+  tap: suderman/suds
+
+# Installing via npm
+coffee-script:
+  use: npm
+
+# Shorthand for install via npm
+uglify-js: npm
+
+# Installing via brew. This forumula has options and requires a custom tap.
+php53: 
+  use: brew 
+  opt: --with-mysql --with-cgi
+  tap: josegonzalez/homebrew-php
+
+# Shorthand for install via brew. Put brew, its options, and tap all on one line.
+php54: brew --with-mysql --with-cgi josegonzalez/homebrew-php
+
+# Installing via the App Store. All this can do is open the right page in the App Store; the user must click "Install" from there.
+Reeder.app: 
+  use: http://itunes.apple.com/ca/app/reeder/id439845554?mt=12
+  
+# Shorthand for installing via the App Store
+Cobook.app: http://itunes.apple.com/ca/app/cobook/id525225808?mt=12
+
+# Even shorter method for installing via the App Store
+Sparrow.app: sparrow/id417250177
+
+# Installing a dmg
+Google Chrome.app: 
+  use: https://dl.google.com/chrome/mac/stable/GGRO/googlechrome.dmg
+
+# Some funky installers require running an .app file from within the dmg. Set "open" to true to make this happen.
+Flash Player.prefPane: 
+  use: http://fpdownload.macromedia.com/get/flashplayer/pdc/11.3.300.257/install_flash_player_osx.dmgtall_flash_player_osx.dmg
+  open: true
+
+# Shorthand for making an installer open the .app file (instead of copying it).
+Spotify.app: http://download.spotify.com/SpotifyInstaller.zip --open
+
+# Installing a pkg (shorthand)
+gcc: https://github.com/downloads/kennethreitz/osx-gcc-installer/GCC-10.7-v2.pkg
+
+# Some apps cannot be installed automatically. This opens a URL to prompt the user to install the app manually.
+LogMeIn.plugin: https://secure.logmein.com/central/Central.aspx
+
+# To execute shell commands after an install, add your instructions after "run".
+Dropbox.app: 
+  use: https://ddr3luum8vl5r.cloudfront.net/Dropbox%201.4.9.dmg
+  run: mv -f /Applications/Dropbox.app/Contents/Resources/check.icns /Applications/Dropbox.app/Contents/Resources/check.icns.bak
+
+# Installing a local dmg (see app documentation). Execute multiple shell commands after an install.
+VMware Fusion.app:
+  use: VMware-Fusion-4-1.1.1-536016-light.dmg
+  run: |
+    rm -rf "/Applications/Getting Started.app"
+    rm -rf "/Applications/Double-click to upgrade from VMware Fusion 3.app"
