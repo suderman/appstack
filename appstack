@@ -18,7 +18,16 @@ class AppStack
 
       # Process the yaml file
       begin
-        process YAML::load File.open(source)
+        stack = YAML::load File.open(source)
+
+        # Ensure the necessary apps are installed first
+        process stack, :brew
+        process stack, :node
+        process stack, :npm
+        process stack, :app
+
+        # Do everything else in any order
+        process stack
 
       # Error message if the yaml file is malformed
       rescue Exception => se
@@ -34,11 +43,24 @@ class AppStack
 
 
   # Deal with each app in the stack
-  def process(stack)
+  def process(stack, key=nil)
+
+    # Process a particular key in the stack
+    if key
+      key = key.to_s
+      process({key => stack.delete(key)}) if stack[key]
+      return
+    end
+
     stack.each do |key, val|
 
       # Build app object from key + val
       app = parse key, val
+
+      # Process any app prerequisites
+      app[:pre].each do |pre|
+        process(stack, pre) if stack[pre]
+      end
 
       # Install each app appropriately
       case app[:use]
@@ -197,8 +219,8 @@ class AppStack
 
     # Everything else is considered a command
     else
+      run = val unless val['run']
       use = :command
-      run = val
     end
 
     # Split linebreaks into arrays for commands
