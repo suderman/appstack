@@ -23,7 +23,12 @@ coffee-script:
   use: npm
 
 # Shorthand for install via npm
-uglify-js: npm
+underscore: npm
+
+# Ensure prequisite apps are installed first with "pre"
+uglify-js: 
+  use: npm
+  pre: coffee-script
 
 # Installing via brew. This forumula has options and requires a custom tap.
 php53: 
