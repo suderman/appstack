@@ -3,7 +3,7 @@
 
 # Homebrew should be installed right away
 brew: 
-  run: /usr/bin/ruby -e '$(/usr/bin/curl -fsSL https://raw.github.com/mxcl/homebrew/master/Library/Contributions/install_homebrew.rb)'
+  run: /usr/bin/ruby -e "$(/usr/bin/curl -fsSL https://raw.github.com/mxcl/homebrew/master/Library/Contributions/install_homebrew.rb)"
 
 # Node needs to be installed before npm
 node: 
