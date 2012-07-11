@@ -1,22 +1,26 @@
 # Example appstack
 # appstack example.yml
 
-# Homebrew should be installed right away
-brew: 
-  run: /usr/bin/ruby -e "$(/usr/bin/curl -fsSL https://raw.github.com/mxcl/homebrew/master/Library/Contributions/install_homebrew.rb)"
+# Specify an install order for the basic stuff
+bootstrap: [app, llvm-gcc, gcc, brew, node, npm]
+
+# app is an installer for .app, .pkg, .mpkg, .prefPane and .safariextz
+app: 
+  run: curl https://raw.github.com/suderman/app/master/install.sh | sh
+
+# Compiler and command line tools required for node and homebrew
+gcc: 
+  use: https://github.com/downloads/kennethreitz/osx-gcc-installer/GCC-10.7-v2.pkg
+
+# Homebrew installed with the shorthand style
+brew: /usr/bin/ruby -e "$(/usr/bin/curl -fsSL https://raw.github.com/mxcl/homebrew/master/Library/Contributions/install_homebrew.rb)"
 
 # Node needs to be installed before npm
 node: 
   use: brew
 
 # npm is another support installer for many tools
-npm: 
-  run: curl http://npmjs.org/install.sh | sh
-
-# app is an installer for .app, .pkg, .mpkg, .prefPane and .safariextz
-app: 
-  use: brew 
-  tap: suderman/suds
+npm: curl http://npmjs.org/install.sh | sh
 
 # Installing via npm
 coffee-script:
@@ -42,7 +46,7 @@ php54: brew --with-mysql --with-cgi josegonzalez/homebrew-php
 # Installing via the App Store. All this can do is open the right page in the App Store; the user must click "Install" from there.
 Reeder.app: 
   use: http://itunes.apple.com/ca/app/reeder/id439845554?mt=12
-  
+
 # Shorthand for installing via the App Store
 Cobook.app: http://itunes.apple.com/ca/app/cobook/id525225808?mt=12
 
@@ -60,9 +64,6 @@ Flash Player.prefPane:
 
 # Shorthand for making an installer open the .app file (instead of copying it).
 Spotify.app: http://download.spotify.com/SpotifyInstaller.zip --open
-
-# Installing a pkg (shorthand)
-gcc: https://github.com/downloads/kennethreitz/osx-gcc-installer/GCC-10.7-v2.pkg
 
 # Some apps cannot be installed automatically. This opens a URL to prompt the user to install the app manually.
 LogMeIn.plugin: https://secure.logmein.com/central/Central.aspx
