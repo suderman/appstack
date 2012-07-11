@@ -60,14 +60,21 @@ class AppStack
     end
 
     # Process everything else
-    stack.each do |key, val|
+    skip = []
+    stack.sort_by { |key, val| key.downcase }.each do |key, val|
 
       # Build app object from key + val
       app = parse key, val
 
+      # Skip anything already installed out of order (because of pre)
+      next if skip.include? key
+
       # Process any app prerequisites
       app[:pre].each do |pre|
-        process(stack, pre) if stack[pre]
+        if stack[pre]
+          process stack, pre
+          skip << pre
+        end
       end
 
       # Install each app appropriately
@@ -170,7 +177,7 @@ class AppStack
     # Determine installer based on contents of "use"
     case use
 
-    # Brew => brew --with-mysql --with-cgi josegonzalez/homebrew-php
+    # Brew => brew --with-mysql --with-cgi josegonzalez/php
     when /^brew(\s\-{1,2}[\w\-]+)*(\s[\w\-]+\/[\w\-]+)*$/i
 
       # Set tap if the shorthand is used
