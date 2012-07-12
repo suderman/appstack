@@ -1,6 +1,12 @@
 #!/bin/sh
 # curl https://raw.github.com/suderman/appstack/master/install.sh | sh
 
+# Ensure /usr/local/bin exists
+if [ ! -d "/usr/local" ]; then
+  sudo mkdir -p /usr/local/bin
+  sudo chown `whoami`:admin /usr/{local,local/bin}
+fi
+
 # Download appstack into /usr/local/bin
 curl https://raw.github.com/suderman/appstack/master/appstack -o /usr/local/bin/appstack
 
