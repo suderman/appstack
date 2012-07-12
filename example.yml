@@ -1,5 +1,5 @@
-# Example appstack
-# appstack example.yml
+# appstack example.yml 
+# ====================
 
 # Specify an install order for the basic stuff
 bootstrap: [app, llvm-gcc, gcc, brew, node, npm]
