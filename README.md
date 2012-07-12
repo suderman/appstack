@@ -1,7 +1,7 @@
 appstack
 ========
 
-Feed it a yaml file; install everything.  
+Feed it yaml; install everything.  
 
 `appstack example.yml`  
 
@@ -57,7 +57,7 @@ wish to include other options, like `run` or `pre`. `pre` is like `run`,
 except those commands get executed before the install. Alternatively, it
 can also be used to pre-require any apps before installing the current one.  
 
-Here's a long-form npm install, with `pre`:
+Here's a long-form [npm](http://npmjs.org/) install, with `pre`:
 
 ```
 uglify-js: 
