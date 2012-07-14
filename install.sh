@@ -1,7 +1,7 @@
 #!/bin/sh
 
 # 2012 Jon Suderman
-# https://github.com/suderman/symlink/
+# https://github.com/suderman/appstack/
 
 # Open a terminal and run this command:
 # curl https://raw.github.com/suderman/appstack/master/install.sh | sh
