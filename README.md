@@ -101,7 +101,7 @@ This is a single line example which installs Google Chrome:
 It can also handle Mac App Store links (although the actual installation
 of them is not scriptable):  
 
-`Reeder.app: http://itunes.apple.com/ca/app/reeder/id439845554?mt=12`
+`Reeder.app: macappstore://itunes.apple.com/ca/app/reeder/id439845554?mt=12`
 
 Check [example.yml](https://github.com/suderman/appstack/blob/master/example.yml) for more information on what can be done.
 

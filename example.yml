@@ -45,10 +45,10 @@ php54: brew --with-mysql --with-cgi josegonzalez/php
 
 # Installing via the App Store. All this can do is open the right page in the App Store; the user must click "Install" from there.
 Reeder.app: 
-  use: http://itunes.apple.com/ca/app/reeder/id439845554?mt=12
+  use: macappstore://itunes.apple.com/ca/app/reeder/id439845554?mt=12
 
 # Shorthand for installing via the App Store
-Cobook.app: http://itunes.apple.com/ca/app/cobook/id525225808?mt=12
+Cobook.app: macappstore://itunes.apple.com/ca/app/cobook/id525225808?mt=12
 
 # Even shorter method for installing via the App Store
 Sparrow.app: sparrow/id417250177
