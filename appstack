@@ -343,8 +343,12 @@ class AppStack
   # Check if an app exists
   def find?(path, name)
 
+    # Ensure the path we're searching in exists
+    path = File.expand_path(path)
+    return false unless File.exist? path
+
     # Look for the file without sudo
-    find_command = "find \"#{File.expand_path(path)}\" -iname \"#{name}\" 2>&1 | head -n 1"
+    find_command = "find \"#{path}\" -iname \"#{name}\" 2>&1 | head -n 1"
     results = `#{find_command}`.chomp
 
     # If that doesn't work, go full-sudo
