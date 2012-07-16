@@ -38,10 +38,10 @@ uglify-js:
 php53: 
   use: brew 
   opt: --with-mysql --with-cgi
-  tap: josegonzalez/homebrew-php
+  tap: josegonzalez/php
 
 # Shorthand for install via brew. Put brew, its options, and tap all on one line.
-php54: brew --with-mysql --with-cgi josegonzalez/homebrew-php
+php54: brew --with-mysql --with-cgi josegonzalez/php
 
 # Installing via the App Store. All this can do is open the right page in the App Store; the user must click "Install" from there.
 Reeder.app: 
