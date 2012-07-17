@@ -373,7 +373,7 @@ class AppStack
       "macappstore://itunes.apple.com/ca/app/#{source}#{options}"
 
     # Dropbox => zmlm47fmbqcnwl7/GCC-10.7-v2.pkg
-    when /^[\w]*\/[\w\.\-\s%]*\.(#{extensions})$/i
+    when /^[\w]*\/[\w\.\-\s%!]*\.(#{extensions})$/i
       "https://dl.dropbox.com/s/#{source}#{options}"
 
     else
