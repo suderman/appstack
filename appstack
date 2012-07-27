@@ -103,6 +103,7 @@ class AppStack
         when :app
           install app do
             system "app \"#{app[:src]}\" #{app[:opt].join(' ')}"
+            say "Complete installation with installer" if app[:opt].include? '--open'
           end
 
         # Open a URL 
