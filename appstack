@@ -1,6 +1,6 @@
 #!/usr/bin/env ruby
 
-# 2012 Jon Suderman
+# 2013 Jon Suderman
 # https://github.com/suderman/appstack/
 
 require 'rubygems'
@@ -253,7 +253,7 @@ class AppStack
 
   # Known extensions handled by app installer
   def extensions
-    "zip|dmg|pkg|mpkg|service|prefPane|safariextz"
+    "zip|dmg|pkg|mpkg|service|prefPane|safariextz|fxplug|moef"
   end
 
 
@@ -329,8 +329,14 @@ class AppStack
 
     when :safariextz
       return true if find? "~/Library/Safari/Extensions", name
-    end
 
+    when :fxplug
+      return true if find? "/Library/Plug-Ins/FxPlug", name
+
+    when :moef
+      return true if find? "~/Movies/Motion Templates/Effects", name
+
+    end
     false
   end
 

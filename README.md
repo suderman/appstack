@@ -82,9 +82,9 @@ uglify-js:
 
 ###Usage with app
 [app](https://github.com/suderman/app) is an OS X installer which handles 
-files ending in zip, dmg, app, pkg, mpkg, and safariextz. It can handle local 
-files and URLs (just make sure the path ends with the actual filename and 
-extension).
+files ending in zip, dmg, app, pkg, mpkg, fxplug, moef, & safariextz. It can 
+handle local files and URLs (just make sure the path ends with the actual 
+filename and extension).
 
 Here's an example installing Dropbox, with a post-install command:  
 
